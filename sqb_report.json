@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-04-25T11:44:15.392688",
+  "total_incidents": 2,
+  "incidents": [
+    {
+      "attack_type": "Credential Stuffing",
+      "ip": "192.168.1.105",
+      "start_time": "2025-01-15T08:01:12+05:00",
+      "end_time": "2025-01-15T08:01:23+05:00",
+      "duration_sec": 11.0,
+      "total_requests": 12,
+      "failed_attempts": 9,
+      "successful_logins": 3,
+      "bytes_exfiltrated": 0,
+      "user_agents": [
+        "python-requests/2.28.0"
+      ],
+      "severity": "CRITICAL"
+    },
+    {
+      "attack_type": "Data Exfiltration",
+      "ip": "172.16.0.200",
+      "start_time": "2025-01-15T08:03:00+05:00",
+      "end_time": "2025-01-15T08:03:25+05:00",
+      "duration_sec": 25.0,
+      "total_requests": 6,
+      "bytes_exfiltrated": 9175040,
+      "bytes_exfil_human": "8.8 MB",
+      "avg_response_bytes": 1529173,
+      "transfer_rate_bps": 367002,
+      "endpoints_accessed": [
+        "/api/transactions/export",
+        "/api/transactions/bulk",
+        "/api/users/list",
+        "/api/accounts/export",
+        "/api/cards/all"
+      ],
+      "user_agents": [
+        "Mozilla/5.0"
+      ],
+      "severity": "CRITICAL"
+    }
+  ]
+}

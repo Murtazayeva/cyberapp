@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SQB Kiberhujum Tahlil Paneli</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0a0f1e;color:#e2e8f0;min-height:100vh}
+header{background:linear-gradient(135deg,#1a1f3e 0%,#0d1224 100%);border-bottom:1px solid #1e2d5a;padding:1.2rem 2rem;display:flex;align-items:center;gap:1rem}
+header h1{font-size:1.3rem;font-weight:700;color:#fff}
+header .badge{background:#ef4444;color:#fff;font-size:0.7rem;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.5px}
+.ts{font-size:0.75rem;color:#64748b;margin-left:auto}
+main{padding:1.5rem 2rem;max-width:1200px;margin:0 auto}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:#111827;border:1px solid #1e2d5a;border-radius:12px;padding:1.2rem;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.cs::before{background:#f59e0b}
+.stat-card.sqli::before{background:#ef4444}
+.stat-card.exfil::before{background:#8b5cf6}
+.stat-card.total::before{background:#06b6d4}
+.stat-card .label{font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.stat-card .value{font-size:2rem;font-weight:700;color:#fff}
+.stat-card .sub{font-size:0.75rem;color:#94a3b8;margin-top:4px}
+.stat-card .icon{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:2.2rem;opacity:0.15}
+
+.section-title{font-size:0.85rem;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin:1.5rem 0 0.8rem;font-weight:600}
+
+.incident-card{background:#111827;border:1px solid #1e2d5a;border-radius:12px;margin-bottom:1rem;overflow:hidden;transition:border-color 0.2s}
+.incident-card:hover{border-color:#334155}
+.incident-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;cursor:pointer}
+.incident-header .attack-icon{font-size:1.4rem}
+.incident-header .attack-name{font-weight:600;font-size:1rem}
+.incident-header .attack-ip{font-family:monospace;font-size:0.85rem;color:#94a3b8;margin-left:auto}
+.severity{display:inline-block;font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.5px;margin-left:8px}
+.severity.CRITICAL{background:#7f1d1d;color:#fca5a5}
+.severity.HIGH{background:#78350f;color:#fcd34d}
+
+.incident-body{padding:0 1.25rem 1.25rem;display:none}
+.incident-body.open{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.5rem;margin-top:0.75rem}
+.field{margin-bottom:0.4rem}
+.field .k{font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.8px}
+.field .v{font-size:0.9rem;color:#e2e8f0;font-family:monospace}
+.field .v.red{color:#f87171}
+.field .v.green{color:#34d399}
+.field .v.yellow{color:#fbbf24}
+
+.payloads{margin-top:0.75rem}
+.payloads .title{font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.payload-item{background:#1e293b;border-radius:6px;padding:6px 10px;font-family:monospace;font-size:0.78rem;color:#fca5a5;margin-bottom:4px;word-break:break-all}
+.eps{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ep-tag{background:#1e293b;border-radius:6px;padding:4px 10px;font-size:0.75rem;font-family:monospace;color:#93c5fd}
+
+.timeline{margin-top:1.5rem;background:#111827;border:1px solid #1e2d5a;border-radius:12px;padding:1.25rem}
+.tl-title{font-size:0.85rem;color:#94a3b8;margin-bottom:1rem}
+.tl-track{position:relative;height:60px}
+.tl-bar-wrap{position:absolute;top:20px;height:20px;border-radius:4px;transition:opacity 0.2s}
+.tl-bar-wrap:hover{opacity:0.85}
+.tl-label{font-size:0.65rem;color:#94a3b8;position:absolute;top:44px;transform:translateX(-50%)}
+.tl-legend{display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap}
+.tl-legend-item{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:#94a3b8}
+.tl-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.upload-zone{border:2px dashed #1e2d5a;border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:1.5rem}
+.upload-zone:hover{border-color:#3b82f6}
+.upload-zone.drag{border-color:#3b82f6;background:#0f1d3a}
+.upload-zone p{color:#64748b;font-size:0.9rem;margin-top:0.5rem}
+.upload-zone .icon{font-size:2rem}
+.upload-btn{display:inline-block;margin-top:0.75rem;padding:8px 20px;background:#1e40af;color:#fff;border-radius:8px;font-size:0.85rem;cursor:pointer;border:none}
+#fileInput{display:none}
+.run-btn{display:inline-block;padding:10px 24px;background:#1e40af;color:#fff;border-radius:8px;font-size:0.9rem;cursor:pointer;border:none;font-weight:600;width:100%;margin-bottom:1rem}
+.run-btn:hover{background:#2563eb}
+textarea{width:100%;background:#111827;border:1px solid #1e2d5a;border-radius:8px;color:#e2e8f0;font-family:monospace;font-size:0.78rem;padding:0.75rem;min-height:120px;resize:vertical;outline:none}
+textarea:focus{border-color:#3b82f6}
+.tab-bar{display:flex;gap:0;margin-bottom:1rem;border-bottom:1px solid #1e2d5a}
+.tab{padding:8px 18px;font-size:0.82rem;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s}
+.tab.active{color:#60a5fa;border-bottom-color:#60a5fa}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.empty{color:#475569;font-size:0.9rem;text-align:center;padding:2rem}
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:1.6rem">🛡️</span>
+  <h1>SQB Kiberhujum Tahlil Paneli</h1>
+  <span class="badge">LIVE</span>
+  <span class="ts" id="ts"></span>
+</header>
+<main>
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('analyze')">Log Tahlil</div>
+    <div class="tab" onclick="switchTab('demo')">Demo Hisobot</div>
+  </div>
+
+  <!-- ANALYZE TAB -->
+  <div class="tab-panel active" id="tab-analyze">
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+         ondragover="ev(event,'over')" ondragleave="ev(event,'leave')" ondrop="ev(event,'drop')">
+      <div class="icon">📂</div>
+      <strong style="color:#94a3b8">Nginx log faylini yuklang</strong>
+      <p>yoki quyidagi matn maydoniga log satrlarini paste qiling</p>
+      <button class="upload-btn" onclick="event.stopPropagation()">Fayl tanlash</button>
+      <input type="file" id="fileInput" accept=".log,.txt" onchange="loadFile(this)"/>
+    </div>
+    <textarea id="logInput" placeholder="Bu yerga log satrlarini paste qiling...&#10;&#10;Misol:&#10;192.168.1.105 - - [15/Jan/2025:08:01:12 +0500] &quot;POST /api/auth/login HTTP/1.1&quot; 401 134 &quot;-&quot; &quot;python-requests/2.28.0&quot;"></textarea>
+    <button class="run-btn" style="margin-top:0.75rem" onclick="runAnalysis()">⚡ Tahlilni boshlash</button>
+    <div id="analyze-results"></div>
+  </div>
+
+  <!-- DEMO TAB -->
+  <div class="tab-panel" id="tab-demo">
+    <div id="demo-results"></div>
+  </div>
+</main>
+
+<script>
+// ─── SAMPLE DATA ───────────────────────────────────────────────────────────
+const SAMPLE_LOGS = `192.168.1.105 - - [15/Jan/2025:08:01:12 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:13 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:14 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:15 +0500] "POST /api/auth/login HTTP/1.1" 200 512 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:16 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:17 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:18 +0500] "POST /api/auth/login HTTP/1.1" 200 512 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:19 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:20 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:21 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:22 +0500] "POST /api/auth/login HTTP/1.1" 401 134 "-" "python-requests/2.28.0"
+192.168.1.105 - - [15/Jan/2025:08:01:23 +0500] "POST /api/auth/login HTTP/1.1" 200 512 "-" "python-requests/2.28.0"
+10.0.0.77 - - [15/Jan/2025:08:02:05 +0500] "GET /api/users?id=1' OR '1'='1 HTTP/1.1" 500 289 "-" "curl/7.68.0"
+10.0.0.77 - - [15/Jan/2025:08:02:06 +0500] "GET /api/accounts?id=1 UNION SELECT username,password FROM users-- HTTP/1.1" 500 289 "-" "curl/7.68.0"
+10.0.0.77 - - [15/Jan/2025:08:02:07 +0500] "GET /api/transactions?filter=1; DROP TABLE sessions-- HTTP/1.1" 500 289 "-" "curl/7.68.0"
+10.0.0.77 - - [15/Jan/2025:08:02:08 +0500] "GET /api/users?name=' OR 1=1-- HTTP/1.1" 400 189 "-" "curl/7.68.0"
+10.0.0.77 - - [15/Jan/2025:08:02:09 +0500] "GET /api/cards?id=1 AND SLEEP(5)-- HTTP/1.1" 500 289 "-" "curl/7.68.0"
+10.0.0.77 - - [15/Jan/2025:08:02:10 +0500] "GET /api/users?id=1 UNION SELECT table_name FROM information_schema.tables-- HTTP/1.1" 500 289 "-" "curl/7.68.0"
+172.16.0.200 - - [15/Jan/2025:08:03:00 +0500] "GET /api/accounts/export?format=csv HTTP/1.1" 200 524288 "-" "Mozilla/5.0"
+172.16.0.200 - - [15/Jan/2025:08:03:05 +0500] "GET /api/transactions/export?from=2020-01-01 HTTP/1.1" 200 1048576 "-" "Mozilla/5.0"
+172.16.0.200 - - [15/Jan/2025:08:03:10 +0500] "GET /api/users/list?page=1&size=10000 HTTP/1.1" 200 2097152 "-" "Mozilla/5.0"
+172.16.0.200 - - [15/Jan/2025:08:03:15 +0500] "GET /api/cards/all HTTP/1.1" 200 786432 "-" "Mozilla/5.0"
+172.16.0.200 - - [15/Jan/2025:08:03:20 +0500] "GET /api/accounts/export?format=json HTTP/1.1" 200 1572864 "-" "Mozilla/5.0"
+172.16.0.200 - - [15/Jan/2025:08:03:25 +0500] "GET /api/transactions/bulk HTTP/1.1" 200 3145728 "-" "Mozilla/5.0"`;
+
+// ─── LOG PARSER ──────────────────────────────────────────────────────────
+const LOG_RE = /^(\d{1,3}(?:\.\d{1,3}){3})\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"(\w+)\s+([^\s"]+)\s+HTTP\/[\d.]+"\s+(\d{3})\s+(\d+)(?:\s+"[^"]*"\s+"([^"]*)")?/;
+const TIME_FMT = /(\d{2})\/(\w+)\/(\d{4}):(\d{2}):(\d{2}):(\d{2})\s+([+-]\d{4})/;
+const MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+
+function parseTime(s){
+  const m=TIME_FMT.exec(s); if(!m)return null;
+  const tz=m[7]; const sign=tz[0]==='-'?-1:1;
+  const tzOff=sign*(parseInt(tz.slice(1,3))*60+parseInt(tz.slice(3,5)));
+  return new Date(Date.UTC(+m[3],MONTHS[m[2]],+m[1],+m[4],+m[5],+m[6])-tzOff*60000);
+}
+
+function parseLogs(text){
+  return text.split('\n').map(l=>{
+    const m=LOG_RE.exec(l.trim()); if(!m)return null;
+    const t=parseTime(m[2]); if(!t)return null;
+    return {ip:m[1],time:t,method:m[3],path:m[4],status:+m[5],bytes:+m[6],ua:m[7]||''};
+  }).filter(Boolean);
+}
+
+// ─── DETECTORS ──────────────────────────────────────────────────────────
+const LOGIN_EPS=['/api/auth/login','/api/login','/login','/auth'];
+const SQLI_PATS=[
+  /UNION\s+SELECT/i,/OR\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i,/DROP\s+TABLE/i,
+  /SLEEP\s*\(/i,/information_schema/i,/--\s*$/,/;\s*(SELECT|DROP|INSERT)/i,
+  /['"]\s*(OR|AND)\s+['"]?\d/i,/UNION\s+SELECT/i,/BENCHMARK\s*\(/i
+];
+const EXFIL_EPS=['/export','/bulk','/download','/all','/list','/dump'];
+
+function detectCS(logs){
+  const byIp={};
+  logs.forEach(e=>{ if(LOGIN_EPS.some(ep=>e.path.startsWith(ep))){ (byIp[e.ip]=byIp[e.ip]||[]).push(e); } });
+  return Object.entries(byIp).flatMap(([ip,reqs])=>{
+    if(reqs.length<5)return[];
+    const fails=reqs.filter(r=>[401,403].includes(r.status));
+    const ok=reqs.filter(r=>r.status===200);
+    let burst=false;
+    for(const req of fails){
+      const w=fails.filter(r=>r.time>=req.time&&r.time-req.time<=60000);
+      if(w.length>=5){burst=true;break;}
+    }
+    if(!burst)return[];
+    const dur=(reqs[reqs.length-1].time-reqs[0].time)/1000;
+    return [{attack_type:'Credential Stuffing',ip,start_time:reqs[0].time,end_time:reqs[reqs.length-1].time,
+      duration_sec:dur.toFixed(1),total_requests:reqs.length,failed_attempts:fails.length,
+      successful_logins:ok.length,bytes_exfiltrated:0,user_agents:[...new Set(reqs.map(r=>r.ua).filter(Boolean))],
+      severity:ok.length>0?'CRITICAL':'HIGH'}];
+  });
+}
+
+function detectSQLI(logs){
+  const byIp={};
+  logs.forEach(e=>{
+    const path=decodeURIComponent(e.path).replace(/\+/g,' ');
+    const hits=SQLI_PATS.filter(p=>p.test(path));
+    if(hits.length){e._sqliHits=hits.map(p=>p.source);(byIp[e.ip]=byIp[e.ip]||[]).push(e);}
+  });
+  return Object.entries(byIp).map(([ip,reqs])=>{
+    const dur=(reqs[reqs.length-1].time-reqs[0].time)/1000;
+    const errCnt=reqs.filter(r=>[400,500,503].includes(r.status)).length;
+    const allPats=[...new Set(reqs.flatMap(r=>r._sqliHits||[]))];
+    return {attack_type:'SQL Injection',ip,start_time:reqs[0].time,end_time:reqs[reqs.length-1].time,
+      duration_sec:dur.toFixed(1),total_requests:reqs.length,error_responses:errCnt,bytes_exfiltrated:0,
+      matched_patterns:allPats,sample_payloads:reqs.slice(0,3).map(r=>r.path.slice(0,120)),
+      user_agents:[...new Set(reqs.map(r=>r.ua).filter(Boolean))],severity:'CRITICAL'};
+  });
+}
+
+function detectExfil(logs){
+  const byIp={};
+  logs.forEach(e=>{
+    if(e.status===200&&e.bytes>=100000&&EXFIL_EPS.some(ep=>e.path.includes(ep)))
+      (byIp[e.ip]=byIp[e.ip]||[]).push(e);
+  });
+  return Object.entries(byIp).flatMap(([ip,reqs])=>{
+    if(reqs.length<3)return[];
+    const total=reqs.reduce((s,r)=>s+r.bytes,0);
+    const dur=(reqs[reqs.length-1].time-reqs[0].time)/1000;
+    const rate=total/Math.max(dur,1);
+    const eps=[...new Set(reqs.map(r=>r.path.split('?')[0]))];
+    return [{attack_type:'Data Exfiltration',ip,start_time:reqs[0].time,end_time:reqs[reqs.length-1].time,
+      duration_sec:dur.toFixed(1),total_requests:reqs.length,bytes_exfiltrated:total,
+      bytes_exfil_human:humanBytes(total),avg_response_bytes:Math.round(total/reqs.length),
+      transfer_rate_bps:Math.round(rate),endpoints_accessed:eps,
+      user_agents:[...new Set(reqs.map(r=>r.ua).filter(Boolean))],
+      severity:total>5000000?'CRITICAL':'HIGH'}];
+  });
+}
+
+function humanBytes(n){
+  if(n<1024)return n+' B';
+  if(n<1048576)return(n/1024).toFixed(1)+' KB';
+  if(n<1073741824)return(n/1048576).toFixed(1)+' MB';
+  return(n/1073741824).toFixed(2)+' GB';
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────
+const ICONS={'Credential Stuffing':'🔐','SQL Injection':'💉','Data Exfiltration':'📤'};
+const COLORS={'Credential Stuffing':'#f59e0b','SQL Injection':'#ef4444','Data Exfiltration':'#8b5cf6'};
+
+function formatTime(d){
+  if(!(d instanceof Date))d=new Date(d);
+  return d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function renderResults(incidents, container){
+  if(!incidents.length){
+    container.innerHTML='<div class="empty">⚠️ Hech qanday hujum aniqlanmadi yoki log formati noto\'g\'ri.</div>';
+    return;
+  }
+  const cs=incidents.filter(i=>i.attack_type==='Credential Stuffing');
+  const sqli=incidents.filter(i=>i.attack_type==='SQL Injection');
+  const exfil=incidents.filter(i=>i.attack_type==='Data Exfiltration');
+  const totalBytes=incidents.reduce((s,i)=>s+(i.bytes_exfiltrated||0),0);
+
+  let html=`<div class="stats">
+    <div class="stat-card total"><div class="label">Jami hodisalar</div><div class="value">${incidents.length}</div><div class="sub">Barcha hujum turlari</div><div class="icon">🚨</div></div>
+    <div class="stat-card cs"><div class="label">Credential Stuffing</div><div class="value">${cs.length}</div><div class="sub">${cs.reduce((s,i)=>s+i.failed_attempts,0)} ta xato login</div><div class="icon">🔐</div></div>
+    <div class="stat-card sqli"><div class="label">SQL Injection</div><div class="value">${sqli.length}</div><div class="sub">${sqli.reduce((s,i)=>s+i.total_requests,0)} ta zararli so'rov</div><div class="icon">💉</div></div>
+    <div class="stat-card exfil"><div class="label">Data Exfiltration</div><div class="value">${exfil.length}</div><div class="sub">${humanBytes(totalBytes)} eksfiltratsiya</div><div class="icon">📤</div></div>
+  </div>`;
+
+  // Timeline
+  if(incidents.length){
+    const allTimes=incidents.flatMap(i=>[new Date(i.start_time),new Date(i.end_time)]);
+    const tMin=Math.min(...allTimes.map(t=>t.getTime()));
+    const tMax=Math.max(...allTimes.map(t=>t.getTime()));
+    const tRange=Math.max(tMax-tMin,1000);
+    html+=`<div class="timeline"><div class="tl-title" style="font-size:0.8rem;font-weight:600;color:#94a3b8">HUJUMLAR VAQT O'QI</div>
+    <div class="tl-track" style="margin-top:1rem">`;
+    incidents.forEach((inc,idx)=>{
+      const left=((new Date(inc.start_time)-tMin)/tRange*90).toFixed(1);
+      const width=Math.max(((new Date(inc.end_time)-new Date(inc.start_time))/tRange*90),3).toFixed(1);
+      const color=COLORS[inc.attack_type];
+      html+=`<div class="tl-bar-wrap" title="${inc.attack_type}: ${inc.ip}" style="left:${left}%;width:${width}%;background:${color};opacity:0.85;top:${12+idx*6}px;height:14px">
+        <span class="tl-label" style="left:50%;font-size:0.6rem;top:16px">${formatTime(inc.start_time)}</span>
+      </div>`;
+    });
+    html+=`</div><div class="tl-legend">`;
+    Object.entries(COLORS).forEach(([name,color])=>{
+      html+=`<div class="tl-legend-item"><div class="tl-legend-dot" style="background:${color}"></div>${name}</div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  html+='<div class="section-title">Aniqlangan Hodisalar</div>';
+  incidents.forEach((inc,idx)=>{
+    const sev=`<span class="severity ${inc.severity}">${inc.severity}</span>`;
+    html+=`<div class="incident-card">
+      <div class="incident-header" onclick="toggle(${idx})">
+        <span class="attack-icon">${ICONS[inc.attack_type]||'⚠'}</span>
+        <span class="attack-name">${inc.attack_type}</span>${sev}
+        <span class="attack-ip">${inc.ip}</span>
+        <span style="color:#64748b;font-size:1rem;margin-left:8px" id="arr${idx}">▼</span>
+      </div>
+      <div class="incident-body" id="body${idx}">
+        <div class="grid2">
+          <div class="field"><div class="k">Hujumchi IP</div><div class="v">${inc.ip}</div></div>
+          <div class="field"><div class="k">Davomiyligi</div><div class="v">${inc.duration_sec} soniya</div></div>
+          <div class="field"><div class="k">Boshlanish</div><div class="v">${formatTime(inc.start_time)}</div></div>
+          <div class="field"><div class="k">Tugash</div><div class="v">${formatTime(inc.end_time)}</div></div>
+          <div class="field"><div class="k">Jami so'rovlar</div><div class="v yellow">${inc.total_requests}</div></div>
+          ${inc.failed_attempts!==undefined?`<div class="field"><div class="k">Xato loginlar</div><div class="v red">${inc.failed_attempts}</div></div>`:''}
+          ${inc.successful_logins?`<div class="field"><div class="k">Muvaffaqiyatli</div><div class="v red">${inc.successful_logins} ⚠</div></div>`:''}
+          ${inc.error_responses!==undefined&&inc.attack_type==='SQL Injection'?`<div class="field"><div class="k">Server xatolari</div><div class="v red">${inc.error_responses}</div></div>`:''}
+          ${inc.bytes_exfiltrated?`<div class="field"><div class="k">Eksfiltratsiya</div><div class="v red">${inc.bytes_exfil_human}</div></div>`:''}
+          ${inc.transfer_rate_bps?`<div class="field"><div class="k">Uzatish tezligi</div><div class="v">${inc.transfer_rate_bps.toLocaleString()} B/s</div></div>`:''}
+        </div>
+        ${inc.user_agents&&inc.user_agents.length?`<div class="payloads"><div class="title">User-Agent</div>${inc.user_agents.map(u=>`<div class="payload-item" style="color:#93c5fd">${u}</div>`).join('')}</div>`:''}
+        ${inc.sample_payloads&&inc.sample_payloads.length?`<div class="payloads"><div class="title">Namuna SQL Payload-lar</div>${inc.sample_payloads.map(p=>`<div class="payload-item">${p}</div>`).join('')}</div>`:''}
+        ${inc.endpoints_accessed&&inc.endpoints_accessed.length?`<div class="payloads"><div class="title">Ulangan Endpoint-lar</div><div class="eps">${inc.endpoints_accessed.map(e=>`<span class="ep-tag">${e}</span>`).join('')}</div></div>`:''}
+      </div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+
+function toggle(idx){
+  const body=document.getElementById('body'+idx);
+  const arr=document.getElementById('arr'+idx);
+  const open=body.classList.toggle('open');
+  arr.textContent=open?'▲':'▼';
+}
+
+// ─── TABS & ACTIONS ──────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const names=['analyze','demo'];
+    t.classList.toggle('active',names[i]===name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='demo') loadDemo();
+}
+
+function loadDemo(){
+  const container=document.getElementById('demo-results');
+  if(container.innerHTML)return;
+  const logs=parseLogs(SAMPLE_LOGS);
+  const incidents=[...detectCS(logs),...detectSQLI(logs),...detectExfil(logs)];
+  renderResults(incidents,container);
+}
+
+function runAnalysis(){
+  const text=document.getElementById('logInput').value.trim();
+  if(!text){alert('Iltimos log matnini kiriting!');return;}
+  const container=document.getElementById('analyze-results');
+  container.innerHTML='<div class="empty">Tahlil qilinmoqda...</div>';
+  const logs=parseLogs(text);
+  if(!logs.length){container.innerHTML='<div class="empty">Log formati aniqlanmadi. Nginx standart formatini tekshiring.</div>';return;}
+  const incidents=[...detectCS(logs),...detectSQLI(logs),...detectExfil(logs)];
+  renderResults(incidents,container);
+}
+
+function loadFile(input){
+  const f=input.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{document.getElementById('logInput').value=e.target.result;};
+  reader.readAsText(f);
+}
+
+function ev(e,type){
+  e.preventDefault();
+  const z=document.getElementById('dropZone');
+  if(type==='over')z.classList.add('drag');
+  else if(type==='leave')z.classList.remove('drag');
+  else if(type==='drop'){
+    z.classList.remove('drag');
+    const f=e.dataTransfer.files[0];
+    if(f){const r=new FileReader();r.onload=ev2=>{document.getElementById('logInput').value=ev2.target.result;};r.readAsText(f);}
+  }
+}
+
+// Init
+document.getElementById('ts').textContent=new Date().toLocaleString('uz-UZ');
+loadDemo();
+setTimeout(()=>switchTab('demo'),100);
+</script>
+</body>
+</html>

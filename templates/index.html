@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - Real-time Log Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon"></span>
+                <h1>CYBERGUARD <span class="badge">SIEM</span></h1>
+            </div>
+            <div class="header-actions">
+                <a href="/api/export" class="btn-export">⬇ Export Report</a>
+                <div class="status">
+                    <div class="status-indicator active"></div>
+                    <span>Monitoring Nginx Logs</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="top-row">
+            <!-- Analytics Chart -->
+            <section class="panel chart-panel">
+                <div class="panel-header">
+                    <h2>ATTACK DISTRIBUTION</h2>
+                </div>
+                <div class="panel-content chart-container">
+                    <canvas id="attackChart"></canvas>
+                </div>
+            </section>
+            
+            <!-- DoS Attack Panel -->
+            <section class="panel border-blue">
+                <div class="panel-header">
+                    <h2>DOS / DDOS ATTACKS</h2>
+                    <span class="count" id="dos-count">0</span>
+                </div>
+                <div class="panel-content" id="dos-list">
+                    <div class="loading">Waiting for data...</div>
+                </div>
+            </section>
+        </div>
+
+        <main class="grid">
+            <!-- SQL Injection Panel -->
+            <section class="panel border-red">
+                <div class="panel-header">
+                    <h2>SQL INJECTION</h2>
+                    <span class="count" id="sqli-count">0</span>
+                </div>
+                <div class="panel-content" id="sqli-list">
+                    <div class="loading">Waiting for data...</div>
+                </div>
+            </section>
+
+            <!-- Credential Stuffing Panel -->
+            <section class="panel border-orange">
+                <div class="panel-header">
+                    <h2>CREDENTIAL STUFFING</h2>
+                    <span class="count" id="cred-count">0</span>
+                </div>
+                <div class="panel-content" id="cred-list">
+                    <div class="loading">Waiting for data...</div>
+                </div>
+            </section>
+
+            <!-- Data Exfiltration Panel -->
+            <section class="panel border-purple">
+                <div class="panel-header">
+                    <h2>DATA EXFILTRATION</h2>
+                    <span class="count" id="exfil-count">0</span>
+                </div>
+                <div class="panel-content" id="exfil-list">
+                    <div class="loading">Waiting for data...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
