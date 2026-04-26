@@ -97,8 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Limit data to max 8 items and sort by end_time descending
+        const displayData = data
+            .sort((a, b) => new Date(b.end_time) - new Date(a.end_time))
+            .slice(0, 8);
+
         let html = '';
-        data.forEach(attack => {
+        displayData.forEach(attack => {
             html += createAttackCard(attack);
         });
         
