@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard SIEM - Taqdimot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #050a15;
+            --text-color: #e2e8f0;
+            --primary: #00ffcc;
+            --secondary: #ff3366;
+            --accent: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 51, 102, 0.08), transparent 25%);
+        }
+
+        .slider-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out, visibility 0.8s;
+            transform: scale(0.9);
+            padding: 2rem 10%;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .title-slide h1 {
+            font-size: 4.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
+        }
+
+        .title-slide p {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            max-width: 600px;
+        }
+
+        .slide h2 {
+            font-size: 3rem;
+            color: var(--primary);
+            border-bottom: 2px solid rgba(0, 255, 204, 0.3);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .content-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            max-width: 900px;
+            font-size: 1.4rem;
+            line-height: 1.8;
+            text-align: left;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        li i {
+            color: var(--primary);
+            margin-top: 6px;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .danger {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            text-align: left;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .demo-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .demo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 255, 204, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="slider-container" id="slider">
+        
+        <!-- Slide 1 -->
+        <div class="slide active title-slide">
+            <i class="fa-solid fa-shield-halved" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem; text-shadow: 0 0 20px var(--primary);"></i>
+            <h1>CyberGuard SIEM</h1>
+            <p>Kiberxavfsizlik va real vaqtda hujumlarni aniqlash aqlli tizimi.</p>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Muammo</h2>
+            <div class="content-box">
+                <p>Bugungi kunda raqamli platformalar doimiy xavf ostida:</p>
+                <ul>
+                    <li><i class="fa-solid fa-bug"></i> <strong>Kech aniqlash:</strong> Ko'plab hujumlar faqatgina zarar yetkazilgandan keyin bilinadi.</li>
+                    <li><i class="fa-solid fa-server"></i> <strong>Server yuklamalari:</strong> Kutilmagan DDoS hujumlar tizimlarni ishdan chiqaradi.</li>
+                    <li><i class="fa-solid fa-database"></i> <strong>Ma'lumotlar o'g'irlanishi:</strong> SQL Injection orqali nozik ma'lumotlar fosh bo'ladi.</li>
+                    <li><i class="fa-solid fa-eye-slash"></i> <strong>Ko'rinmaslik:</strong> Administratorlar real vaqt rejimida nima bo'layotganini ko'ra olishmaydi.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-lightbulb"></i> Bizning Yechim</h2>
+            <div class="content-box">
+                <p><strong>CyberGuard SIEM</strong> — bu server loglarini (<span class="highlight">Nginx</span>) real vaqtda o'qib, ularni tahlil qiladigan va xavf tug'ilganda tezkor chora ko'radigan avtomatlashtirilgan platforma.</p>
+                <br>
+                <p>U qanday ishlaydi?</p>
+                <ul>
+                    <li><i class="fa-solid fa-bolt"></i> So'rovlarni soniyaning mingdan bir qismida filtrlaydi.</li>
+                    <li><i class="fa-solid fa-chart-line"></i> Dashboard orqali vizual ko'rinishda namoyish etadi.</li>
+                    <li><i class="fa-solid fa-bell"></i> Xavfli IP manzillar bo'yicha Telegramga xabar beradi.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-microchip"></i> Asosiy Imkoniyatlar</h2>
+            <div class="grid-layout">
+                <div class="card">
+                    <i class="fa-solid fa-code"></i>
+                    <h3>SQL Injection</h3>
+                    <p style="color: #94a3b8; font-size: 1rem; margin-top: 10px;">Ma'lumotlar bazasiga qilingan ruxsatsiz so'rovlarni (UNION, SELECT) tutib oladi hamda hujum qilayotgan <strong>IP manzil va davlatni (kim tarafidan qilinayotganini)</strong> aniq ko'rsatib beradi.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <h3>DDoS / DoS Himoya</h3>
+                    <p style="color: #94a3b8; font-size: 1rem; margin-top: 10px;">Bitta IP manzil tarmoqqa ortiqcha yuklama berganda uni avtomatik aniqlaydi va ro'yxatga oladi.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-user-secret"></i>
+                    <h3>Credential Stuffing</h3>
+                    <p style="color: #94a3b8; font-size: 1rem; margin-top: 10px;">Parollarni buzishga (Brute-force) qaratilgan takroriy login urinishlarini payqaydi.</p>
+                </div>
+                <div class="card">
+                    <i class="fa-solid fa-globe"></i>
+                    <h3>GeoIP Kuzatuv</h3>
+                    <p style="color: #94a3b8; font-size: 1rem; margin-top: 10px;">Hujumchi aynan qaysi davlatdan turib harakat qilayotganini xarita integratsiyasi orqali ko'rsatadi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-layer-group"></i> Texnologiyalar (Stack)</h2>
+            <div class="content-box" style="text-align: center;">
+                <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; margin-top: 20px;">
+                    <div>
+                        <i class="fa-brands fa-python" style="font-size: 4rem; color: #3b82f6;"></i>
+                        <p style="margin-top: 10px; font-weight: bold;">Python 3</p>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-flask" style="font-size: 4rem; color: #fff;"></i>
+                        <p style="margin-top: 10px; font-weight: bold;">Flask Framework</p>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-database" style="font-size: 4rem; color: #00ffcc;"></i>
+                        <p style="margin-top: 10px; font-weight: bold;">SQLite</p>
+                    </div>
+                    <div>
+                        <i class="fa-brands fa-js" style="font-size: 4rem; color: #f7df1e;"></i>
+                        <p style="margin-top: 10px; font-weight: bold;">Vanilla JS / Chart.js</p>
+                    </div>
+                    <div>
+                        <i class="fa-brands fa-telegram" style="font-size: 4rem; color: #0088cc;"></i>
+                        <p style="margin-top: 10px; font-weight: bold;">Telegram API</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-rocket"></i> Xulosa & Namoyish</h2>
+            <div class="content-box" style="text-align: center;">
+                <p>Tizimimiz resurslarni tejaydi, tez ishlaydi va ochiq kodli texnologiyalarga asoslangan.</p>
+                <p style="margin-top: 15px;">Endi e'tiboringizni amaliy qismga qaratsak. Jonli dashboard va tizim hujumlarni qanday ushlayotganini ko'ramiz.</p>
+                
+                <a href="http://127.0.0.1:5000" target="_blank" class="demo-btn">
+                    <i class="fa-solid fa-desktop"></i> Jonli Dashboard'ni Ochish
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn" id="prevBtn" onclick="changeSlide(-1)"><i class="fa-solid fa-arrow-left"></i> Oldingi</button>
+        <button class="btn" id="nextBtn" onclick="changeSlide(1)">Keyingi <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlider() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+
+            // Update Progress Bar
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = progress + '%';
+
+            // Update Buttons
+            document.getElementById('prevBtn').style.opacity = currentSlide === 0 ? '0.5' : '1';
+            document.getElementById('prevBtn').style.pointerEvents = currentSlide === 0 ? 'none' : 'auto';
+            
+            document.getElementById('nextBtn').style.opacity = currentSlide === slides.length - 1 ? '0.5' : '1';
+            document.getElementById('nextBtn').style.pointerEvents = currentSlide === slides.length - 1 ? 'none' : 'auto';
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            updateSlider();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.code === 'Space' || e.key === ' ') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Initial setup
+        updateSlider();
+    </script>
+</body>
+</html>

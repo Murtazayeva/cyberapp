@@ -68,6 +68,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="detail-value">${formatBytes(attack.bytes_exfiltrated)}</span>
                     </div>
                     <div class="detail-item" style="grid-column: span 2;">
+                        <span class="detail-label">Origin</span>
+                        <span class="detail-value">${attack.country} ${flag}</span>
+                    </div>
+                    ${attack.payload ? `
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <span class="detail-label">Attack Payload</span>
+                        <span class="detail-value" style="color: #ef4444; font-family: monospace; word-break: break-all; font-size: 0.85rem; background: rgba(239, 68, 68, 0.1); padding: 4px; border-radius: 4px;">${attack.payload}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-item" style="grid-column: span 2;">
                         <span class="detail-label">Last Seen</span>
                         <span class="detail-value">${attack.end_time}</span>
                     </div>

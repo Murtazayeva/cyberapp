@@ -91,9 +91,14 @@ def init_db():
             start_time TEXT,
             end_time TEXT,
             duration REAL,
+            payload TEXT,
             UNIQUE(ip, attack_type, start_time)
         )
     ''')
+    try:
+        cursor.execute("ALTER TABLE attacks ADD COLUMN payload TEXT")
+    except sqlite3.OperationalError:
+        pass
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS banned_ips (
             ip TEXT PRIMARY KEY,
@@ -109,10 +114,13 @@ class AttackTracker:
         self.bytes_exfiltrated = 0
         self.start_time = None
         self.end_time = None
+        self.payload = None
 
-    def update(self, time_obj, bytes_sent):
+    def update(self, time_obj, bytes_sent, payload=None):
         self.requests += 1
         self.bytes_exfiltrated += bytes_sent
+        if payload:
+            self.payload = payload
         if self.start_time is None or time_obj < self.start_time:
             self.start_time = time_obj
         if self.end_time is None or time_obj > self.end_time:
@@ -133,7 +141,8 @@ class AttackTracker:
             "end_time": self.end_time.strftime("%Y-%m-%d %H:%M:%S") if self.end_time else None,
             "duration": self.get_duration(),
             "country": geo.get("country", "Unknown"),
-            "countryCode": geo.get("countryCode", "UN")
+            "countryCode": geo.get("countryCode", "UN"),
+            "payload": self.payload
         }
 
 def parse_time(time_str):
@@ -146,10 +155,10 @@ def save_to_db(data_list, attack_type):
         try:
             cursor.execute('''
                 INSERT OR IGNORE INTO attacks 
-                (ip, attack_type, requests, bytes_exfiltrated, start_time, end_time, duration)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (ip, attack_type, requests, bytes_exfiltrated, start_time, end_time, duration, payload)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (item['ip'], attack_type, item['requests'], item['bytes_exfiltrated'], 
-                  item['start_time'], item['end_time'], item['duration']))
+                  item['start_time'], item['end_time'], item['duration'], item.get('payload')))
             
             # Agar chindan ham yangi hujum yozilgan bo'lsa (rowcount 1 bo'lsa), xabar beramiz
             if cursor.rowcount > 0:
@@ -198,7 +207,7 @@ def get_analysis_data(log_file):
 
                 # SQL Injection
                 if any(p.search(url) for p in SQLI_PATTERNS):
-                    sqli_attackers[ip].update(time_obj, bytes_sent)
+                    sqli_attackers[ip].update(time_obj, bytes_sent, payload=url)
 
                 # Credential Stuffing
                 if method == 'POST' and any(endpoint in url for endpoint in LOGIN_ENDPOINTS):
